@@ -1,0 +1,396 @@
+{
+  "info": {
+    "_postman_id": "01977d65-75c8-7000-8000-000000000100",
+    "name": "MercadoExpress - API de Inventario",
+    "description": "Colección completa para productos, inventario, alertas y órdenes de compra. Ejecute primero `Listar productos` y `Consultar alertas activas` para cargar automáticamente los IDs de trabajo.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "productId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "alertId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "purchaseOrderId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Productos",
+      "item": [
+        {
+          "name": "Listar productos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"]
+            },
+            "description": "Consulta todos los productos y guarda el ID del primero para las solicitudes siguientes."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Productos consultados', () => pm.response.to.have.status(200));",
+                  "const products = pm.response.json();",
+                  "if (products.length > 0) {",
+                  "  pm.collectionVariables.set('productId', products[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear producto",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Café Molido 500g\",\n  \"sku\": \"GRA-{{$timestamp}}\",\n  \"category\": \"Granos\",\n  \"price\": 18500,\n  \"currentStock\": 0,\n  \"minimumStock\": 20,\n  \"supplier\": \"Café Colombia S.A.S.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"]
+            },
+            "description": "Crea un producto con el stock inicial informado. `currentStock` es opcional: puede eliminarse del body y el servidor usará 0. Si queda igual o por debajo del mínimo, genera una alerta STOCK_BAJO activa. El SKU usa una marca de tiempo para facilitar ejecuciones repetidas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Producto creado', () => pm.response.to.have.status(201));",
+                  "if (pm.response.code === 201) {",
+                  "  pm.collectionVariables.set('productId', pm.response.json().id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Inventario",
+      "item": [
+        {
+          "name": "Consultar inventario",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/inventory",
+              "host": ["{{baseUrl}}"],
+              "path": ["inventory"]
+            },
+            "description": "Consulta todo el inventario y guarda el ID del primer producto."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Inventario consultado', () => pm.response.to.have.status(200));",
+                  "const products = pm.response.json();",
+                  "if (products.length > 0) {",
+                  "  pm.collectionVariables.set('productId', products[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consultar inventario con filtros",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/inventory?category=Bebidas&supplier=Lácteos del Valle&hasActiveAlert=true&minimumStock=0&maximumStock=100",
+              "host": ["{{baseUrl}}"],
+              "path": ["inventory"],
+              "query": [
+                { "key": "category", "value": "Bebidas", "disabled": false },
+                { "key": "supplier", "value": "Lácteos del Valle", "disabled": true },
+                { "key": "hasActiveAlert", "value": "true", "disabled": false },
+                { "key": "minimumStock", "value": "0", "disabled": true },
+                { "key": "maximumStock", "value": "100", "disabled": true }
+              ]
+            },
+            "description": "Los filtros pueden habilitarse y combinarse según sea necesario."
+          }
+        },
+        {
+          "name": "Registrar entrada",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"ENTRADA\",\n  \"quantity\": 25,\n  \"reason\": \"Recepción manual de mercadería\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/inventory/{{productId}}/adjustments",
+              "host": ["{{baseUrl}}"],
+              "path": ["inventory", "{{productId}}", "adjustments"]
+            }
+          }
+        },
+        {
+          "name": "Registrar salida",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"SALIDA\",\n  \"quantity\": 5,\n  \"reason\": \"Venta en punto físico\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/inventory/{{productId}}/adjustments",
+              "host": ["{{baseUrl}}"],
+              "path": ["inventory", "{{productId}}", "adjustments"]
+            }
+          }
+        },
+        {
+          "name": "Consultar movimientos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/inventory/{{productId}}/movements",
+              "host": ["{{baseUrl}}"],
+              "path": ["inventory", "{{productId}}", "movements"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Alertas",
+      "item": [
+        {
+          "name": "Consultar todas las alertas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/alerts",
+              "host": ["{{baseUrl}}"],
+              "path": ["alerts"]
+            }
+          }
+        },
+        {
+          "name": "Consultar alertas activas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/alerts?status=ACTIVA",
+              "host": ["{{baseUrl}}"],
+              "path": ["alerts"],
+              "query": [{ "key": "status", "value": "ACTIVA" }]
+            },
+            "description": "Guarda automáticamente el ID de la primera alerta activa y el producto asociado."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Alertas consultadas', () => pm.response.to.have.status(200));",
+                  "const alerts = pm.response.json();",
+                  "if (alerts.length > 0) {",
+                  "  pm.collectionVariables.set('alertId', alerts[0].id);",
+                  "  pm.collectionVariables.set('productId', alerts[0].productId);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consultar alertas resueltas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/alerts?status=RESUELTA",
+              "host": ["{{baseUrl}}"],
+              "path": ["alerts"],
+              "query": [{ "key": "status", "value": "RESUELTA" }]
+            }
+          }
+        },
+        {
+          "name": "Cerrar alerta",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/alerts/{{alertId}}/close",
+              "host": ["{{baseUrl}}"],
+              "path": ["alerts", "{{alertId}}", "close"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Órdenes de compra",
+      "item": [
+        {
+          "name": "Crear orden manual",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{productId}}\",\n  \"quantity\": 120\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/purchase-orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["purchase-orders"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Orden creada', () => pm.response.to.have.status(201));",
+                  "if (pm.response.code === 201) {",
+                  "  pm.collectionVariables.set('purchaseOrderId', pm.response.json().id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear orden desde alerta",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{productId}}\",\n  \"quantity\": 120,\n  \"alertId\": \"{{alertId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/purchase-orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["purchase-orders"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Orden creada desde alerta', () => pm.response.to.have.status(201));",
+                  "if (pm.response.code === 201) {",
+                  "  pm.collectionVariables.set('purchaseOrderId', pm.response.json().id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consultar órdenes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/purchase-orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["purchase-orders"]
+            }
+          }
+        },
+        {
+          "name": "Consultar órdenes pendientes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/purchase-orders?status=PENDIENTE",
+              "host": ["{{baseUrl}}"],
+              "path": ["purchase-orders"],
+              "query": [{ "key": "status", "value": "PENDIENTE" }]
+            }
+          }
+        },
+        {
+          "name": "Aprobar orden",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/purchase-orders/{{purchaseOrderId}}/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["purchase-orders", "{{purchaseOrderId}}", "approve"]
+            }
+          }
+        },
+        {
+          "name": "Rechazar orden",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"El proveedor no tiene disponibilidad\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/purchase-orders/{{purchaseOrderId}}/reject",
+              "host": ["{{baseUrl}}"],
+              "path": ["purchase-orders", "{{purchaseOrderId}}", "reject"]
+            },
+            "description": "Debe ejecutarse sobre una orden PENDIENTE distinta de la utilizada en el flujo aprobar/recibir."
+          }
+        },
+        {
+          "name": "Recibir orden",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/purchase-orders/{{purchaseOrderId}}/receive",
+              "host": ["{{baseUrl}}"],
+              "path": ["purchase-orders", "{{purchaseOrderId}}", "receive"]
+            },
+            "description": "Ejecutar después de aprobar. Incrementa el stock, registra el movimiento y resuelve la alerta cuando el stock supera el mínimo."
+          }
+        }
+      ]
+    }
+  ]
+}
