@@ -26,7 +26,6 @@ async function bootstrap(): Promise<void> {
     .setTitle('MercadoExpress - API de Inventario')
     .setDescription('Gestión de productos, stock, alertas y órdenes de compra')
     .setVersion('1.0.0')
-    .addServer('/api')
     .build();
   SwaggerModule.setup('docs', app, SwaggerModule.createDocument(app, swaggerConfig), {
     customSiteTitle: 'MercadoExpress API',
