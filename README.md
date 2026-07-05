@@ -28,11 +28,9 @@ flowchart LR
 
 Las dependencias apuntan hacia el dominio. `domain` y `application` son TypeScript puro; NestJS solamente ensambla dependencias y expone HTTP. Los casos de uso que modifican varios agregados se ejecutan en una unidad de trabajo Prisma con aislamiento `Serializable`.
 
-### ¿Por qué NestJS en lugar de Express directo?
+### ¿Por qué NestJS y no Express?
 
-La aplicación sí utiliza Express como servidor HTTP mediante `@nestjs/platform-express`, el adaptador predeterminado de NestJS. La decisión arquitectónica no fue eliminar Express, sino evitar construir la aplicación directamente sobre su API mínima.
-
-Express directo también era una elección válida y habría resuelto correctamente la exposición HTTP. Se incorporó NestJS sobre Express porque aporta estructura modular, inyección de dependencias, validación, interceptores, filtros y Swagger integrados. Para un dominio con reglas relacionadas entre inventario, alertas y órdenes, esa organización mejora la mantenibilidad y la testabilidad sin trasladar el framework al núcleo del negocio.
+Express también era una elección válida y habría resuelto correctamente la exposición HTTP. NestJS se eligió porque aporta una estructura modular, inyección de dependencias, validación, interceptores, filtros y Swagger integrados. Para un dominio con reglas relacionadas entre inventario, alertas y órdenes, esa organización mejora la mantenibilidad y la testabilidad sin trasladar el framework al núcleo del negocio.
 
 ### Principios y patrones
 
