@@ -15,7 +15,6 @@ export class AlertsController {
 
   @Get()
   @ApiOperation({ summary: 'Consultar alertas por estado' })
-  @ApiBody({ required: false, description: 'Este endpoint no requiere cuerpo.' })
   @ApiResponse({
     status: 200,
     description: 'Listado de alertas',

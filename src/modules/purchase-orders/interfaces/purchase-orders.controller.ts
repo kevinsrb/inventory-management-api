@@ -53,7 +53,6 @@ export class PurchaseOrdersController {
 
   @Get()
   @ApiOperation({ summary: 'Consultar órdenes de compra por estado' })
-  @ApiBody({ required: false, description: 'Este endpoint no requiere cuerpo.' })
   @ApiResponse({
     status: 200,
     description: 'Listado de órdenes',

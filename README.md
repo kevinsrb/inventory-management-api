@@ -124,6 +124,17 @@ pnpm test:cov
 
 La batería cubre producto, SKU duplicado, entradas, salidas, stock negativo y faltante, creación/no duplicación/cierre de alertas, cantidad mínima, aprobación, rechazo, recepción, actualización de stock y cierre automático de alerta.
 
+La inmutabilidad del historial se valida contra PostgreSQL real en una base exclusiva de pruebas:
+
+```powershell
+$env:DATABASE_URL="postgresql://postgres:postgres@localhost:5432/mercado_express_test?schema=public"
+$env:TEST_DATABASE_URL=$env:DATABASE_URL
+pnpm prisma migrate deploy
+pnpm test:integration
+```
+
+El test de integración intenta editar y eliminar un movimiento, verifica que PostgreSQL rechace ambas operaciones y confirma que el registro original permanezca intacto. Nunca apunte `TEST_DATABASE_URL` a desarrollo o producción.
+
 ## Despliegue en Railway con Docker
 
 Railway construye la aplicación con el `Dockerfile` y toma la configuración de `railway.json`. El script `scripts/railway-predeploy.sh` ejecuta, en orden:

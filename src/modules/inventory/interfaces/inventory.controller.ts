@@ -17,7 +17,6 @@ export class InventoryController {
 
   @Get()
   @ApiOperation({ summary: 'Consultar inventario con filtros combinables' })
-  @ApiBody({ required: false, description: 'Este endpoint no requiere cuerpo.' })
   @ApiResponse({
     status: 200,
     description: 'Inventario filtrado',
@@ -50,7 +49,6 @@ export class InventoryController {
   @Get(':productId/movements')
   @ApiOperation({ summary: 'Consultar el historial inmutable de movimientos' })
   @ApiParam({ name: 'productId', format: 'uuid' })
-  @ApiBody({ required: false, description: 'Este endpoint no requiere cuerpo.' })
   @ApiResponse({
     status: 200,
     description: 'Historial del producto',

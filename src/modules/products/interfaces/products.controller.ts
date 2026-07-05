@@ -15,7 +15,6 @@ export class ProductsController {
 
   @Get()
   @ApiOperation({ summary: 'Consultar todos los productos' })
-  @ApiBody({ required: false, description: 'Este endpoint no requiere cuerpo.' })
   @ApiResponse({
     status: 200,
     description: 'Listado de productos',
