@@ -32,6 +32,9 @@ importers:
       class-validator:
         specifier: 0.14.2
         version: 0.14.2
+      dotenv:
+        specifier: 17.2.1
+        version: 17.2.1
       nestjs-pino:
         specifier: 4.6.1
         version: 4.6.1(@nestjs/common@11.1.27(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(pino-http@11.0.0)(pino@10.3.1)(rxjs@7.8.2)
@@ -41,12 +44,18 @@ importers:
       pino-http:
         specifier: 11.0.0
         version: 11.0.0
+      prisma:
+        specifier: 6.19.1
+        version: 6.19.1(typescript@5.9.2)
       reflect-metadata:
         specifier: 0.2.2
         version: 0.2.2
       rxjs:
         specifier: 7.8.2
         version: 7.8.2
+      tsx:
+        specifier: 4.20.4
+        version: 4.20.4
       uuid:
         specifier: 11.1.0
         version: 11.1.0
@@ -75,9 +84,6 @@ importers:
       '@typescript-eslint/parser':
         specifier: 8.39.1
         version: 8.39.1(eslint@9.33.0(jiti@2.7.0))(typescript@5.9.2)
-      dotenv:
-        specifier: 17.2.1
-        version: 17.2.1
       eslint:
         specifier: 9.33.0
         version: 9.33.0(jiti@2.7.0)
@@ -90,15 +96,9 @@ importers:
       prettier:
         specifier: 3.6.2
         version: 3.6.2
-      prisma:
-        specifier: 6.19.1
-        version: 6.19.1(typescript@5.9.2)
       ts-jest:
         specifier: 29.4.1
         version: 29.4.1(@babel/core@7.29.7)(@jest/transform@30.0.5)(@jest/types@30.4.1)(babel-jest@30.0.5(@babel/core@7.29.7))(jest-util@30.4.1)(jest@30.0.5(@types/node@24.3.0))(typescript@5.9.2)
-      tsx:
-        specifier: 4.20.4
-        version: 4.20.4
       typescript:
         specifier: 5.9.2
         version: 5.9.2

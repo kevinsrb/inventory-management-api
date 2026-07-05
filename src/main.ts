@@ -11,6 +11,7 @@ import { AppValidationPipe } from './shared/validation/app-validation.pipe';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  app.enableShutdownHooks();
   const config = app.get(ConfigService<Environment, true>);
   app.useLogger(app.get(Logger));
   app.setGlobalPrefix('api');
@@ -32,7 +33,7 @@ async function bootstrap(): Promise<void> {
     swaggerOptions: { persistAuthorization: true },
   });
 
-  await app.listen(config.get('PORT', { infer: true }));
+  await app.listen(config.get('PORT', { infer: true }), '0.0.0.0');
 }
 
 void bootstrap();

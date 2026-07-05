@@ -9,6 +9,7 @@ import { validateEnvironment, type Environment } from './shared/config/environme
 import { DatabaseModule } from './shared/database/database.module';
 import { GlobalExceptionFilter } from './shared/filters/global-exception.filter';
 import { LoggingInterceptor } from './shared/interceptors/logging.interceptor';
+import { HealthController } from './shared/interfaces/health.controller';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { LoggingInterceptor } from './shared/interceptors/logging.interceptor';
     AlertsModule,
     PurchaseOrdersModule,
   ],
+  controllers: [HealthController],
   providers: [LoggingInterceptor, GlobalExceptionFilter],
 })
 export class AppModule {}

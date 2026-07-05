@@ -28,9 +28,11 @@ flowchart LR
 
 Las dependencias apuntan hacia el dominio. `domain` y `application` son TypeScript puro; NestJS solamente ensambla dependencias y expone HTTP. Los casos de uso que modifican varios agregados se ejecutan en una unidad de trabajo Prisma con aislamiento `Serializable`.
 
-### ¿Por qué NestJS y no Express?
+### ¿Por qué NestJS en lugar de Express directo?
 
-Express también era una elección válida y habría resuelto correctamente la exposición HTTP. NestJS se eligió porque aporta una estructura modular, inyección de dependencias, validación, interceptores, filtros y Swagger integrados. Para un dominio con reglas relacionadas entre inventario, alertas y órdenes, esa organización mejora la mantenibilidad y la testabilidad sin trasladar el framework al núcleo del negocio.
+La aplicación sí utiliza Express como servidor HTTP mediante `@nestjs/platform-express`, el adaptador predeterminado de NestJS. La decisión arquitectónica no fue eliminar Express, sino evitar construir la aplicación directamente sobre su API mínima.
+
+Express directo también era una elección válida y habría resuelto correctamente la exposición HTTP. Se incorporó NestJS sobre Express porque aporta estructura modular, inyección de dependencias, validación, interceptores, filtros y Swagger integrados. Para un dominio con reglas relacionadas entre inventario, alertas y órdenes, esa organización mejora la mantenibilidad y la testabilidad sin trasladar el framework al núcleo del negocio.
 
 ### Principios y patrones
 
@@ -124,6 +126,57 @@ pnpm test:cov
 
 La batería cubre producto, SKU duplicado, entradas, salidas, stock negativo y faltante, creación/no duplicación/cierre de alertas, cantidad mínima, aprobación, rechazo, recepción, actualización de stock y cierre automático de alerta.
 
+## Despliegue en Railway con Docker
+
+Railway construye la aplicación con el `Dockerfile` y toma la configuración de `railway.json`. Antes de iniciar una nueva versión ejecuta, en orden:
+
+1. `prisma migrate deploy`, para aplicar las migraciones pendientes en producción.
+2. `tsx prisma/seed.ts`, cuya implementación es idempotente.
+3. `node dist/main.js`, escuchando en `0.0.0.0:$PORT`.
+
+El health check de Railway utiliza `GET /api/health`. La aplicación no necesita un volumen: la persistencia pertenece al servicio PostgreSQL.
+
+### Variables en Railway
+
+Agregue estas variables al servicio de la API:
+
+| Variable       | Valor                        | Notas                                      |
+| -------------- | ---------------------------- | ------------------------------------------ |
+| `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` | Referencia al servicio PostgreSQL interno. |
+| `NODE_ENV`     | `production`                 | Activa el entorno de producción.           |
+| `LOG_LEVEL`    | `info`                       | Nivel recomendado para Pino.               |
+| `PORT`         | No configurarla manualmente  | Railway la inyecta dinámicamente.          |
+
+Si el servicio de base de datos no se llama `Postgres`, reemplace ese nombre dentro de la referencia. No use en Railway la URL local de Docker (`localhost:5432`) ni publique una credencial real en `.env` o Git.
+
+### Comandos de despliegue
+
+Con la CLI de Railway instalada y autenticada:
+
+```bash
+railway login
+railway init -n mercado-express-inventory
+railway add -d postgres
+railway add -s mercado-express-api
+railway variable set 'DATABASE_URL=${{Postgres.DATABASE_URL}}' NODE_ENV=production LOG_LEVEL=info --service mercado-express-api
+railway up --service mercado-express-api
+railway domain --service mercado-express-api
+```
+
+Comandos útiles después del despliegue:
+
+```bash
+railway logs --service mercado-express-api
+railway status
+railway variable list --service mercado-express-api
+```
+
+La URL pública resultante expone:
+
+- API: `https://<dominio-railway>/api`
+- Health check: `https://<dominio-railway>/api/health`
+- Swagger: `https://<dominio-railway>/docs`
+
 ## Swagger
 
 La documentación interactiva está disponible en:
@@ -148,6 +201,7 @@ Todos los endpoints incluyen operación, cuerpo cuando corresponde, respuestas y
 | `PATCH` | `/api/purchase-orders/:id/approve`      | Aprobar orden pendiente           |
 | `PATCH` | `/api/purchase-orders/:id/reject`       | Rechazar con motivo               |
 | `PATCH` | `/api/purchase-orders/:id/receive`      | Recibir orden y actualizar stock  |
+| `GET`   | `/api/health`                           | Comprobar disponibilidad          |
 
 ## Estructura del proyecto
 
@@ -190,6 +244,7 @@ prisma/
 ├── migrations/
 ├── schema.prisma
 └── seed.ts
+railway.json
 test/
 ├── application/
 └── helpers/
