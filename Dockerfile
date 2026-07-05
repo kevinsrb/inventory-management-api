@@ -21,6 +21,7 @@ COPY --from=production-dependencies --chown=node:node /app/node_modules ./node_m
 COPY --from=production-dependencies --chown=node:node /app/package.json /app/prisma.config.ts ./
 COPY --from=production-dependencies --chown=node:node /app/prisma ./prisma
 COPY --from=build --chown=node:node /app/dist ./dist
+COPY --chown=node:node scripts ./scripts
 USER node
 EXPOSE 3000
 CMD ["node", "dist/main.js"]

@@ -5,9 +5,7 @@
     "dockerfilePath": "Dockerfile"
   },
   "deploy": {
-    "preDeployCommand": [
-      "./node_modules/.bin/prisma migrate deploy && ./node_modules/.bin/tsx prisma/seed.ts"
-    ],
+    "preDeployCommand": ["/bin/sh scripts/railway-predeploy.sh"],
     "startCommand": "node dist/main.js",
     "healthcheckPath": "/api/health",
     "healthcheckTimeout": 120,

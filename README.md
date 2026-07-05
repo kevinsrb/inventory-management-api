@@ -126,7 +126,7 @@ La batería cubre producto, SKU duplicado, entradas, salidas, stock negativo y f
 
 ## Despliegue en Railway con Docker
 
-Railway construye la aplicación con el `Dockerfile` y toma la configuración de `railway.json`. Antes de iniciar una nueva versión ejecuta, en orden:
+Railway construye la aplicación con el `Dockerfile` y toma la configuración de `railway.json`. El script `scripts/railway-predeploy.sh` ejecuta, en orden:
 
 1. `prisma migrate deploy`, para aplicar las migraciones pendientes en producción.
 2. `tsx prisma/seed.ts`, cuya implementación es idempotente.
